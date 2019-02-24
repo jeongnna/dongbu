@@ -91,7 +91,7 @@ allpofol_returns <-
   setNames(c("date", "avg", case_names))
 
 # test
-load("outputs/testing.RData")
+load("outputs/portfolio_returns/testing.RData")
 cat("\n")
 cat(identical(allpofol_returns, correct_allpofol_returns))
 cat("\n\n")
