@@ -1,0 +1,8 @@
+install.packages("tidyverse")
+install.packages("lubridate")
+install.packages("clValid")
+install.packages("quadprog")
+install.packages("parallel")
+install.packages("rugarch")
+install.packages("rmgarch")
+install.packages("tseries")
