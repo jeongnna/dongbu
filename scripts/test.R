@@ -93,5 +93,9 @@ allpofol_returns <-
 # test
 load("outputs/portfolio_returns/testing.RData")
 cat("\n")
-cat(identical(allpofol_returns, correct_allpofol_returns))
+cat(all(signif(allpofol_returns[[2]], 3) == signif(correct_allpofol_returns[[2]], 3)))
+cat("\n")
+cat(all(signif(allpofol_returns[[3]], 3) == signif(correct_allpofol_returns[[3]], 3)))
+cat("\n")
+cat(all(signif(allpofol_returns[[4]], 3) == signif(correct_allpofol_returns[[4]], 3)))
 cat("\n\n")
