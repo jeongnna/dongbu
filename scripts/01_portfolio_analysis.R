@@ -24,7 +24,7 @@ grd <- expand_grid(
   period_length = c(1600),
   clmethod = c("hclust_pearson"),
   covmethod = c("garch"),
-  optim = c("tangency")
+  optim = c("gmv")
 )
 
 # number of clusters
@@ -109,7 +109,7 @@ allpofol_returns <-
   setNames(c("date", "avg", case_names))
 
 # save result
-out_path <- str_c("outputs/garch-tan-", analysis_year, ".RData")
+out_path <- str_c("outputs/garch-gmv-", analysis_year, ".RData")
 save(allpofol_returns, file = out_path)
 
 }
