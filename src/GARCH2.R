@@ -140,19 +140,24 @@ forecast.GJR <- function(fitted, m_lag = NULL, v_lag = NULL,
   
   Sigmas <- sqrt(Sigmas)
   true.mu <- int.data[(last + 1):len]
-  forecast <- tibble(Mu, Sigmas, true.mu)
-  return (list(forecast))
+  list(tibble(Mu, Sigmas, true.mu))
 }
 
 
 # input forecast object & get MSE, MAE for conditional mean & variance
 # park data length should be identical to int.data length of forecast.E/G function input
 get_fpm <- function(forecast, park.data) {
-  forecast<-as.data.frame(forecast)
+  forecast <- as.data.frame(forecast)
   if (is.null(forecast$Mu)) {
-    A <- rep("converge.error", 4)
-    names(A) = c("mu.MSE", "mu.MAE", "s.MSE", "s.MAE")
-    return (A)
+    # A <- rep("converge.error", 4)
+    # names(A) = c("mu.MSE", "mu.MAE", "s.MSE", "s.MAE")
+    # return (A)
+    return (c(
+      "mu.MSE" = "converge.error",
+      "mu.MAE" = "converge.error",
+      "s.MSE" = "converge.error",
+      "s.MAE" = "converge.error"
+    ))
   }
   
   mu.MSE <- mean((forecast$Mu - forecast$true.mu)^2)
@@ -167,9 +172,10 @@ get_fpm <- function(forecast, park.data) {
   tibble(mu.MSE, mu.MAE, s.MSE, s.MAE)
 }
 
-auto.arma.easy<-function(data){
-  output <- auto.arima(data, d=0, D=0, max.order=10, stationary=TRUE, 
-             seasonal=FALSE, allowmean=TRUE, approximation=FALSE, stepwise=TRUE, max.d=0, max.D=0,
-             ic=c("aicc", "aic", "bic"), test="adf", lambda=NULL) 
-  return(output)
+
+auto.arma.easy <- function(data) {
+  auto.arima(data, d = 0, D = 0, max.order = 10, stationary = TRUE, 
+             seasonal = FALSE, allowmean = TRUE, approximation = FALSE,
+             stepwise = TRUE, max.d = 0, max.D = 0,
+             ic = c("aicc", "aic", "bic"), test = "adf", lambda = NULL) 
 }

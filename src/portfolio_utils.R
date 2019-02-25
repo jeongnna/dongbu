@@ -7,12 +7,8 @@ get_weight <-function(x, covmethod = c("sample", "garch"),
     A <- cbind(matrix(1, nrow = nc), diag(nc))
     b <- c(1, rep(0, nc))
   } else if (optim == "tangency") {
-    if (is.null(risk_free)) {
-      stop("ERROR: if `optim` is 'tangency', `risk_free` must not be NULL.")
-    }
-    rf <- mean(risk_free$r)
-    A <- cbind(matrix(apply(x, 2, mean) - rf), diag(rep(1, nc)))
-    b <- c(sum(matrix(apply(x, 2, mean) - rf)), rep(0, nc))
+    A <- cbind(matrix(apply(x, 2, mean) - risk_free), diag(rep(1, nc)))
+    b <- c(sum(matrix(apply(x, 2, mean) - risk_free)), rep(0, nc))
   } else {
     stop("ERROR: `optim` must be one of ('gmv', 'tangency')")
   }
@@ -36,7 +32,6 @@ get_portfolio_return <- function(data, analysis_period, clustering_period_length
   clmethod <- clustering_control$clmethod
   covmethod <- portfolio_control$covmethod
   optim <- portfolio_control$optim
-  risk_free <- portfolio_control$risk_free
   
   date_set <- unique(data$date)
   
@@ -66,16 +61,19 @@ get_portfolio_return <- function(data, analysis_period, clustering_period_length
       as.vector()
       
     # portforlio
-    if (is.null(risk_free)) {
-      rf <- NULL
-    } else {
-      rf <- risk_free %>% filter(date %in% clustering_period)
+    rf <- NULL
+    if (optim == "tangency") {
+      rf <- 
+        data %>% 
+        filter(date %in% clustering_period) %>%
+        pull(rf) %>%
+        mean()
     }
     weight <- get_weight(x, covmethod, optim, rf)
     average_return(r = y, w = weight)
   }
   
-  pf_return <- unlist(mclapply(analysis_period, process, mc.cores = mc_cores))
+  pf_return <- unlist(pbmclapply(analysis_period, process, mc.cores = mc_cores))
   
   tibble(
     date = analysis_period,
@@ -96,12 +94,13 @@ average_portfolio <- function(data, analysis_period) {
 
 
 evaluate_portfolio <- function(portfolio_returns) {
+  benchmark <- portfolio_returns$avg
   portfolio_returns %>%
     gather(key = portfolio, value = logret, -date) %>%
     group_by(portfolio) %>%
     summarize(
       avg_logret = mean(logret),
       sd = sd(logret),
-      sharp = avg_logret / sd
+      info = mean(logret - benchmark) / (sd(logret - benchmark) + 1e-12)
     )
 }
