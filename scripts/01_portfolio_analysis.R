@@ -23,7 +23,7 @@ mc_cores <- 6
 grd <- expand_grid(
   period_length = c(1600),
   clmethod = c("hclust_pearson"),
-  covmethod = c("garch"),
+  covmethod = c("garch_last"),
   optim = c("gmv")
 )
 
@@ -52,7 +52,7 @@ daily <-
 
 ###########################################################################
 ###########################################################################
-for (analysis_year in 2015:2018) {
+for (analysis_year in 2011:2018) {
   cat(
     "\n",
     "analysis year: ", analysis_year,
@@ -109,7 +109,7 @@ allpofol_returns <-
   setNames(c("date", "avg", case_names))
 
 # save result
-out_path <- str_c("outputs/garch-gmv-", analysis_year, ".RData")
+out_path <- str_c("outputs/garch_last-gmv-", analysis_year, ".RData")
 save(allpofol_returns, file = out_path)
 
 }

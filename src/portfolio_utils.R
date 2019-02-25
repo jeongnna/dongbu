@@ -17,6 +17,8 @@ get_weight <-function(x, covmethod = c("sample", "garch"),
     covmat <- cov(x)
   } else if (covmethod == "garch") {
     covmat <- cgarch_vcov(x)
+  } else if (covmethod == "garch_last") {
+    covmat <- cgarch_last(x)
   }
   # optimization
   qp <- solve.QP(covmat, zeros, A, b, meq = 1)

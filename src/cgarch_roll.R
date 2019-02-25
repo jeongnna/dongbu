@@ -52,6 +52,13 @@ cgarch_vcov <- function(data, dist.model = "sstd", var.model = "eGARCH",
   rcov(sim)[, , 1]
 }
 
+cgarch_last <- function(data, dist.model="sstd", var.model="eGARCH",
+                        time.v=FALSE, copula="mvt") {
+  data <- as.data.frame(data)
+  fitted <- cgarch_auto(data = data, set.length = nrow(data), dist.model = dist.model, 
+                        var.model = var.model, time.v = time.v, copula = copula)
+  rcov(fitted$MGARCH)[, , nrow(data)]
+}
 
 # function utilized for diagnostic tests on cgarch
 # input ugarchfit object, outputs 'margins', which can be tested if they are ~ U(0,1)
