@@ -109,9 +109,9 @@ allpofol_returns <-
   setNames(c("date", "avg", case_names))
 
 # save result
-out_path <- str_c("outputs/garch-gmv-mvnorm-", analysis_year, ".RData")
+out_path <- str_c("outputs/garch-gmv-mvnorm-timev-", analysis_year, ".RData")
 save(allpofol_returns, file = out_path)
 
 }
-###########################################################################
+########################################################################### 
 ###########################################################################

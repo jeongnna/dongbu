@@ -52,7 +52,7 @@ cgarch_auto <- function(data, set.length, dist.model, var.model, time.v, copula)
 #   rcov(sim)[, , 1]
 # }
 cgarch_vcov <- function(data, dist.model = "sstd", var.model = "eGARCH",
-                        time.v = FALSE, copula = "mvnorm") {
+                        time.v = TRUE, copula = "mvnorm") {
   data <- as.data.frame(data)
   fitted <- cgarch_auto(data = data, set.length = nrow(data), dist.model = dist.model, 
                         var.model = var.model, time.v = time.v, copula = copula)
