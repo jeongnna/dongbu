@@ -13,9 +13,9 @@ last <- dplyr::last
 
 # Arguments ---------------------------------------------------------------
 
-for (arg in commandArgs(TRUE)) {
-  eval(parse(text=arg))
-}
+# for (arg in commandArgs(TRUE)) {
+#   eval(parse(text=arg))
+# }
 
 mc_cores <- 6
 
@@ -23,7 +23,7 @@ mc_cores <- 6
 grd <- expand_grid(
   period_length = c(1600),
   clmethod = c("hclust_pearson"),
-  covmethod = c("garch_last"),
+  covmethod = c("garch"),
   optim = c("gmv")
 )
 
@@ -109,7 +109,7 @@ allpofol_returns <-
   setNames(c("date", "avg", case_names))
 
 # save result
-out_path <- str_c("outputs/garch_last-gmv-", analysis_year, ".RData")
+out_path <- str_c("outputs/garch-gmv-mvnorm-", analysis_year, ".RData")
 save(allpofol_returns, file = out_path)
 
 }

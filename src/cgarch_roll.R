@@ -39,11 +39,23 @@ cgarch_auto <- function(data, set.length, dist.model, var.model, time.v, copula)
 # input (multivariate time series data, number of observations to set parameters from,
 # distribution & variation model for ugarch
 # outputs a rolling forecast of 1step ahead covariance matrices.
+# cgarch_vcov <- function(data, dist.model = "sstd", var.model = "eGARCH",
+#                         time.v = FALSE, copula = "mvt") {
+#   data <- as.data.frame(data)
+#   fitted <- cgarch_auto(data = data, set.length = nrow(data), dist.model = dist.model, 
+#                       var.model = var.model, time.v = time.v, copula = copula)
+#   sim <- cgarchsim(
+#     fit = fitted$MGARCH, n.sim = 1, n.start = 200, m.sim = 1000,
+#     startMethod = c("sample"), presigma = NULL, preresiduals = NULL, prereturns = NULL,
+#     preR = NULL, preQ = NULL, preZ = NULL, cluster = NULL, prerealized = NULL
+#   )
+#   rcov(sim)[, , 1]
+# }
 cgarch_vcov <- function(data, dist.model = "sstd", var.model = "eGARCH",
-                        time.v = FALSE, copula = "mvt") {
+                        time.v = FALSE, copula = "mvnorm") {
   data <- as.data.frame(data)
   fitted <- cgarch_auto(data = data, set.length = nrow(data), dist.model = dist.model, 
-                      var.model = var.model, time.v = time.v, copula = copula)
+                        var.model = var.model, time.v = time.v, copula = copula)
   sim <- cgarchsim(
     fit = fitted$MGARCH, n.sim = 1, n.start = 200, m.sim = 1000,
     startMethod = c("sample"), presigma = NULL, preresiduals = NULL, prereturns = NULL,
