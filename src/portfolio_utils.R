@@ -1,5 +1,7 @@
-get_weight <-function(x, covmethod = c("sample", "garch"),
-                      optim = c("gmv", "tangency"), risk_free = NULL) {
+get_weight <-function(x, portfolio_control, risk_free = NULL) {
+  covmethod <- portfolio_control$covmethod
+  optim <- portfolio_control$optim
+  copula <- portfolio_control$copula
   # setting for solve.QP()
   nc <- ncol(x)
   zeros <- matrix(0, nrow = nc)
@@ -16,13 +18,9 @@ get_weight <-function(x, covmethod = c("sample", "garch"),
   if (covmethod == "sample") {
     covmat <- cov(x)
   } else if (covmethod == "garch") {
-    covmat <- cgarch_vcov(x)
-  } else if (covmethod == "garch_last") {
-    covmat <- cgarch_last(x)
+    covmat <- cgarch_vcov(x, copula = copula)
   } else if (covmethod == "garch_var") {
-    covmat <- var_vcov(x)
-  } else if (covmethod == "garch_var_last") {
-    covmat <- var_last(x)
+    covmat <- var_vcov(x, copula = copula)
   }
   # optimization
   qp <- solve.QP(covmat, zeros, A, b, meq = 1)
@@ -33,12 +31,6 @@ get_weight <-function(x, covmethod = c("sample", "garch"),
 get_portfolio_return <- function(data, analysis_period, clustering_period_length,
                                  clustering_control, portfolio_control,
                                  mc_cores = 1) {
-  ncmin <- clustering_control$ncmin
-  ncmax <- clustering_control$ncmax
-  clmethod <- clustering_control$clmethod
-  covmethod <- portfolio_control$covmethod
-  optim <- portfolio_control$optim
-  
   date_set <- unique(data$date)
   
   process <- function(t) {
@@ -50,20 +42,20 @@ get_portfolio_return <- function(data, analysis_period, clustering_period_length
     cluster_tbl <- 
       data %>%
       filter(date %in% clustering_period) %>%
-      get_cluster_tbl(ncmin, ncmax, clmethod)
+      get_cluster_tbl(clustering_control)
     # log returns of each cluster
     c(x, y) %<-% get_cluster_return(data, cluster_tbl, clustering_period)
     
     # portforlio
     rf <- NULL
-    if (optim == "tangency") {
+    if (portfolio_control$optim == "tangency") {
       rf <- 
         data %>% 
         filter(date %in% clustering_period) %>%
         pull(rf) %>%
         mean()
     }
-    weight <- get_weight(x, covmethod, optim, rf)
+    weight <- get_weight(x, portfolio_control, rf)
     average_return(r = y, w = weight)
   }
   

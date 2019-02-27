@@ -48,7 +48,10 @@ get_hclust_tbl_ <- function(data, ncmin, ncmax, cormethod) {
 }
 
 
-get_cluster_tbl <- function(data, ncmin, ncmax, clmethod) {
+get_cluster_tbl <- function(data, clustering_control) {
+  ncmin <- clustering_control$ncmin
+  ncmin <- clustering_control$ncmax
+  clmethod <- clustering_control$clmethod
   if (clmethod == "factor_kmeans") {
     get_kmeans_tbl_(data, ncmin, ncmax)
   } else if (clmethod == "hclust_pearson") {
