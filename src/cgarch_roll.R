@@ -39,20 +39,8 @@ cgarch_auto <- function(data, set.length, dist.model, var.model, time.v, copula)
 # input (multivariate time series data, number of observations to set parameters from,
 # distribution & variation model for ugarch
 # outputs a rolling forecast of 1step ahead covariance matrices.
-# cgarch_vcov <- function(data, dist.model = "sstd", var.model = "eGARCH",
-#                         time.v = FALSE, copula = "mvt") {
-#   data <- as.data.frame(data)
-#   fitted <- cgarch_auto(data = data, set.length = nrow(data), dist.model = dist.model, 
-#                       var.model = var.model, time.v = time.v, copula = copula)
-#   sim <- cgarchsim(
-#     fit = fitted$MGARCH, n.sim = 1, n.start = 200, m.sim = 1000,
-#     startMethod = c("sample"), presigma = NULL, preresiduals = NULL, prereturns = NULL,
-#     preR = NULL, preQ = NULL, preZ = NULL, cluster = NULL, prerealized = NULL
-#   )
-#   rcov(sim)[, , 1]
-# }
 cgarch_vcov <- function(data, dist.model = "sstd", var.model = "eGARCH",
-                        time.v = TRUE, copula = "mvnorm") {
+                        time.v = TRUE, copula = "mvt") {
   data <- as.data.frame(data)
   fitted <- cgarch_auto(data = data, set.length = nrow(data), dist.model = dist.model, 
                         var.model = var.model, time.v = time.v, copula = copula)
@@ -64,12 +52,57 @@ cgarch_vcov <- function(data, dist.model = "sstd", var.model = "eGARCH",
   rcov(sim)[, , 1]
 }
 
+
 cgarch_last <- function(data, dist.model="sstd", var.model="eGARCH",
-                        time.v=FALSE, copula="mvt") {
+                        time.v = TRUE, copula = "mvt") {
   data <- as.data.frame(data)
   fitted <- cgarch_auto(data = data, set.length = nrow(data), dist.model = dist.model, 
                         var.model = var.model, time.v = time.v, copula = copula)
   rcov(fitted$MGARCH)[, , nrow(data)]
+}
+
+var_vcov <-function(data) {
+  data <- as.data.frame(data)
+  ugarch <- get_theta(model = 'eGARCH', dist = 'sstd')
+  multi <- multispec(replicate(n = ncol(data), expr = ugarch))
+  
+  spec  <-  cgarchspec(uspec = multi, VAR = TRUE, robust = FALSE, lag = 1, lag.max = NULL,
+                       lag.criterion = c("AIC", "HQ", "SC", "FPE"), external.regressors = NULL,
+                       robust.control = list(gamma = 0.25, delta = 0.01, nc = 10, ns = 500),
+                       dccOrder = c(1, 1), asymmetric = TRUE,
+                       distribution.model = list(copula = c('mvt'),
+                                                 method = c("Kendall"), time.varying = TRUE,
+                                                 transformation = c("parametric")),
+                       start.pars = list(), fixed.pars = list()) 
+  c.fitted <- cgarchfit(spec = spec, data = data, out.sample = 0,
+                        spd.control = list(upper = 0.95, lower = 0.05, type = "mle", kernel = "normal"),
+                        cluster = NULL, fit.control = list(eval.se = FALSE))
+  
+  sim <- cgarchsim(
+    fit = c.fitted, n.sim = 1, n.start = 200, m.sim = 1000,
+    startMethod = c("sample"), presigma = NULL, preresiduals = NULL, prereturns = NULL,
+    preR = NULL, preQ = NULL, preZ = NULL, cluster = NULL, prerealized = NULL)
+  
+  rcov(sim)[,,1]
+}
+
+var_last <- function(data) {
+  data <- as.data.frame(data)
+  ugarch <- get_theta(model = 'eGARCH', dist = 'sstd')
+  multi <- multispec(replicate(n = ncol(data), expr = ugarch))
+  
+  spec  <-  cgarchspec(uspec = multi, VAR = TRUE, robust = FALSE, lag = 1, lag.max = NULL,
+                       lag.criterion = c("AIC", "HQ", "SC", "FPE"), external.regressors = NULL,
+                       robust.control = list(gamma = 0.25, delta = 0.01, nc = 10, ns = 500),
+                       dccOrder = c(1, 1), asymmetric = TRUE,
+                       distribution.model = list(copula = c('mvt'),
+                                                 method = c("Kendall"), time.varying = TRUE,
+                                                 transformation = c("parametric")),
+                       start.pars = list(), fixed.pars = list()) 
+  c.fitted <- cgarchfit(spec = spec, data = data, out.sample = 0,
+                        spd.control = list(upper = 0.95, lower = 0.05, type = "mle", kernel = "normal"),
+                        cluster = NULL, fit.control = list(eval.se = FALSE))
+  rcov(c.fitted)[,,nrow(data)]
 }
 
 # function utilized for diagnostic tests on cgarch

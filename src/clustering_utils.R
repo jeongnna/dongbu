@@ -71,8 +71,10 @@ average_return <- function(return, weight, log_scale = TRUE) {
 }
 
 
-get_cluster_return <- function(data, cluster_tbl) {
-  data %>%
+get_cluster_return <- function(data, cluster_tbl, clustering_period,
+                               cut_period = TRUE) {
+  cluster_return <- 
+    data %>%
     inner_join(cluster_tbl, by = "code") %>%
     select(code, date, logret, size, cluster) %>%
     group_by(code) %>%
@@ -82,6 +84,22 @@ get_cluster_return <- function(data, cluster_tbl) {
     summarize(logret = average_return(r = logret, w = size)) %>%
     ungroup() %>%
     spread(key = cluster, value = logret, sep = "")
+  if (cut_period) {
+    x <- 
+      cluster_return %>%
+      filter(date %in% clustering_period) %>%
+      select(-date) %>%
+      as.matrix()
+    y <- 
+      cluster_return %>%
+      next_day_of(clustering_period) %>%
+      select(-date) %>%
+      t() %>%
+      as.vector()
+    list(x = x, y = y)
+  } else {
+    cluster_return
+  }
 }
 
 

@@ -19,6 +19,10 @@ get_weight <-function(x, covmethod = c("sample", "garch"),
     covmat <- cgarch_vcov(x)
   } else if (covmethod == "garch_last") {
     covmat <- cgarch_last(x)
+  } else if (covmethod == "garch_var") {
+    covmat <- var_vcov(x)
+  } else if (covmethod == "garch_var_last") {
+    covmat <- var_last(x)
   }
   # optimization
   qp <- solve.QP(covmat, zeros, A, b, meq = 1)
@@ -48,20 +52,8 @@ get_portfolio_return <- function(data, analysis_period, clustering_period_length
       filter(date %in% clustering_period) %>%
       get_cluster_tbl(ncmin, ncmax, clmethod)
     # log returns of each cluster
-    cluster_return <- get_cluster_return(data, cluster_tbl)
-    # split sample & target period
-    x <- 
-      cluster_return %>%
-      filter(date %in% clustering_period) %>%
-      select(-date) %>%
-      as.matrix()
-    y <- 
-      cluster_return %>%
-      next_day_of(clustering_period) %>%
-      select(-date) %>%
-      t() %>%
-      as.vector()
-      
+    c(x, y) %<-% get_cluster_return(data, cluster_tbl, clustering_period)
+    
     # portforlio
     rf <- NULL
     if (optim == "tangency") {
@@ -96,13 +88,19 @@ average_portfolio <- function(data, analysis_period) {
 
 
 evaluate_portfolio <- function(portfolio_returns) {
-  benchmark <- portfolio_returns$avg
   portfolio_returns %>%
-    gather(key = portfolio, value = logret, -date) %>%
+    mutate(benchmark = avg) %>%
+    gather(key = portfolio, value = logret, -date, -benchmark) %>%
+    group_by(portfolio, year(date)) %>%
+    mutate(year_info = mean(logret - benchmark) / (sd(logret - benchmark) + 1e-12)) %>%
+    ungroup() %>%
     group_by(portfolio) %>%
-    summarize(
+    mutate(
       avg_logret = mean(logret),
       sd = sd(logret),
-      info = mean(logret - benchmark) / (sd(logret - benchmark) + 1e-12)
-    )
+      info = mean(logret - benchmark) / (sd(logret - benchmark) + 1e-12),
+      avg_info = mean(year_info)
+    ) %>%
+    select(portfolio, avg_logret, sd, info, avg_info) %>%
+    distinct()
 }

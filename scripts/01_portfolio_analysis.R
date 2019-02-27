@@ -3,6 +3,7 @@ library(lubridate)
 library(clValid)
 library(quadprog)
 library(pbmcapply)
+library(zeallot)
 source("src/data_transformation.R")
 source("src/clustering_utils.R")
 source("src/portfolio_utils.R")
@@ -13,17 +14,13 @@ last <- dplyr::last
 
 # Arguments ---------------------------------------------------------------
 
-# for (arg in commandArgs(TRUE)) {
-#   eval(parse(text=arg))
-# }
-
 mc_cores <- 6
 
 # case grid
 grd <- expand_grid(
   period_length = c(1600),
   clmethod = c("hclust_pearson"),
-  covmethod = c("garch"),
+  covmethod = c("garch_last"),
   optim = c("gmv")
 )
 
@@ -109,7 +106,7 @@ allpofol_returns <-
   setNames(c("date", "avg", case_names))
 
 # save result
-out_path <- str_c("outputs/garch-gmv-mvnorm-timev-", analysis_year, ".RData")
+out_path <- str_c("outputs/garch_last-gmv-timev-1600-", analysis_year, ".RData")
 save(allpofol_returns, file = out_path)
 
 }
