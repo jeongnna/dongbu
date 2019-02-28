@@ -50,7 +50,7 @@ daily <-
 
 ###########################################################################
 ###########################################################################
-for (analysis_year in 2011:2018) {
+for (analysis_year in 2014:2018) {
   cat(
     "\n",
     "analysis year: ", analysis_year,
@@ -61,10 +61,8 @@ for (analysis_year in 2011:2018) {
   # Get all portfolio returns -----------------------------------------------
   
   date_set <- unique(daily$date)  # length: 3704
-  # start <- first(which(date_set >= str_c(analysis_year, "-01-01")))
-  # end <- last(which(date_set <= str_c(analysis_year, "-12-31")))
-  start <- first(which(date_set >= "2017-10-01"))
-  end <- last(which(date_set <= "2017-12-31"))
+  start <- first(which(date_set >= str_c(analysis_year, "-01-01")))
+  end <- last(which(date_set <= str_c(analysis_year, "-12-31")))
   analysis_period <- date_set[start:end]
   
   process <- function(len, clmethod, covmethod, copula, optim, mc_cores) {
@@ -83,7 +81,8 @@ for (analysis_year in 2011:2018) {
     )
     p_ctrl <- list(
       optim = optim,
-      covmethod = covmethod
+      covmethod = covmethod,
+      copula = copula
     )
     get_portfolio_return(daily, analysis_period, len, c_ctrl, p_ctrl, mc_cores)
   }
